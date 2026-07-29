@@ -108,22 +108,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// ---------- Global Settings (Decap CMS) ----------
-// Reads data/site-settings.json and applies the logo + footer text
-// across every page. Fails silently if unreachable (e.g. local file://).
-(async function loadGlobalSettings() {
-  try {
-    const res = await fetch('/data/site-settings.json', { cache: 'no-store' });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.logo) {
-      document.querySelectorAll('.brand img').forEach(img => { img.src = data.logo; });
-    }
-    if (data.footer_text) {
-      const el = document.getElementById('footer-text');
-      if (el) el.textContent = data.footer_text;
-    }
-  } catch (err) {
-    // Static defaults already in the HTML remain visible — no action needed.
-  }
-})();

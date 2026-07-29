@@ -134,8 +134,10 @@ header.site {
   .brand img { max-height: 32px; }
   .nav-toggle { display: flex; align-items: center; justify-content: center; z-index: 61; position: relative; }
 
-  /* Dimmed backdrop behind the drawer */
-  body.menu-open::before {
+  /* Dimmed backdrop behind the drawer. This lives on header.site (not
+     body) so it shares the same stacking context as .nav-links and is
+     guaranteed to layer *under* the drawer, not on top of it. */
+  body.menu-open header.site::before {
     content: "";
     position: fixed;
     inset: 0;
@@ -157,17 +159,23 @@ header.site {
     align-items: stretch;
     gap: 0;
     padding-top: 96px;
+    margin: 0;
     overflow-y: auto;
     z-index: 60;
     transform: translateX(100%);
     transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .nav-links.open { transform: translateX(0); }
+  .nav-links li { width: 100%; }
   .nav-links a {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
     padding: 22px 32px;
     border-top: 1px solid var(--line);
     font-size: 1.08rem;
-    width: 100%;
+    line-height: 1.3;
+    touch-action: manipulation;
   }
   .nav-links li:first-child a { border-top: none; }
 
