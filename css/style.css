@@ -84,7 +84,7 @@ header.site {
   text-decoration: none;
   color: var(--ink);
 }
-.brand img { height: 30px; width: auto; flex-shrink: 0; }
+.brand img { height: auto; max-height: 42px; width: auto; max-width: 220px; flex-shrink: 0; }
 .nav-links {
   display: flex;
   align-items: center;
@@ -118,35 +118,68 @@ header.site {
   background: none;
   border: 1px solid var(--line);
   color: var(--ink);
-  width: 40px;
-  height: 40px;
-  border-radius: 4px;
-  font-size: 1.1rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  line-height: 1;
   cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
 }
+.nav-toggle:hover { border-color: var(--amber-dim); color: var(--amber); }
 
 @media (max-width: 720px) {
-  .nav { padding: 22px 0; }
-  .nav-toggle { display: block; z-index: 61; position: relative; }
+  /* Compact premium header bar: logo left, toggle right */
+  .nav { padding: 16px 0; }
+  .brand img { max-height: 32px; }
+  .nav-toggle { display: flex; align-items: center; justify-content: center; z-index: 61; position: relative; }
+
+  /* Dimmed backdrop behind the drawer */
+  body.menu-open::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 6, 6, 0.6);
+    z-index: 58;
+  }
+  body.menu-open { overflow: hidden; }
+
+  /* Slide-out drawer from the right, hidden by default */
   .nav-links {
     position: fixed;
-    top: 79px;
-    left: 0; right: 0; bottom: 0;
+    top: 0; right: 0;
+    height: 100vh;
+    width: min(84vw, 380px);
     background: var(--bg);
+    border-left: 1px solid var(--line);
+    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 0;
-    display: none;
+    padding-top: 96px;
     overflow-y: auto;
-    z-index: 55;
+    z-index: 60;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .nav-links.open { display: flex; }
+  .nav-links.open { transform: translateX(0); }
   .nav-links a {
-    padding: 20px 28px;
+    padding: 22px 32px;
     border-top: 1px solid var(--line);
-    font-size: 1.05rem;
+    font-size: 1.08rem;
     width: 100%;
   }
+  .nav-links li:first-child a { border-top: none; }
+
+  /* Close button sits inside the drawer, top right */
+  .nav-toggle.is-open {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 62;
+    background: var(--bg);
+  }
+
   /* Submenus stay off on mobile — Library/Resources/Directory
      link straight to their hub page, which lists everything. */
   .nav-links .dropdown { display: none !important; }
@@ -581,7 +614,6 @@ footer.site {
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: grayscale(1) contrast(1.1) brightness(0.95);
 }
 .hero-photo::after {
   content: "";

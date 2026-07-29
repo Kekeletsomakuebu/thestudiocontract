@@ -1,17 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
   const toggle = document.querySelector('.nav-toggle');
   const links = document.querySelector('.nav-links');
+
+  const setMenu = (open) => {
+    links.classList.toggle('open', open);
+    toggle.classList.toggle('is-open', open);
+    toggle.textContent = open ? '✕' : '☰';
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    document.body.classList.toggle('menu-open', open);
+  };
+
   if (toggle && links) {
+    toggle.setAttribute('aria-expanded', 'false');
     toggle.addEventListener('click', () => {
-      const isOpen = links.classList.toggle('open');
-      toggle.textContent = isOpen ? '✕' : '☰';
+      setMenu(!links.classList.contains('open'));
     });
     // Closing the menu automatically when a link is tapped
     links.querySelectorAll('a').forEach(a => {
-      a.addEventListener('click', () => {
-        links.classList.remove('open');
-        toggle.textContent = '☰';
-      });
+      a.addEventListener('click', () => setMenu(false));
+    });
+    // Tapping the dimmed backdrop closes the drawer
+    document.addEventListener('click', (e) => {
+      if (!links.classList.contains('open')) return;
+      if (links.contains(e.target) || toggle.contains(e.target)) return;
+      setMenu(false);
+    });
+    // Escape key closes the drawer
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setMenu(false);
     });
   }
 
@@ -91,3 +107,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ---------- Global Settings (Decap CMS) ----------
+// Reads data/site-settings.json and applies the logo + footer text
+// across every page. Fails silently if unreachable (e.g. local file://).
+(async function loadGlobalSettings() {
+  try {
+    const res = await fetch('/data/site-settings.json', { cache: 'no-store' });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.logo) {
+      document.querySelectorAll('.brand img').forEach(img => { img.src = data.logo; });
+    }
+    if (data.footer_text) {
+      const el = document.getElementById('footer-text');
+      if (el) el.textContent = data.footer_text;
+    }
+  } catch (err) {
+    // Static defaults already in the HTML remain visible — no action needed.
+  }
+})();

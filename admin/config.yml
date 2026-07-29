@@ -11,6 +11,21 @@ locale: "en"
 
 collections:
 
+  # ---------- GLOBAL SETTINGS ----------
+  # Powers the site logo (header) and footer text across every page.
+  # The front-end (js/main.js) fetches data/site-settings.json on load
+  # and injects these values into .brand img and #footer-text.
+  - name: "settings"
+    label: "Global Settings"
+    files:
+      - name: "site_settings"
+        label: "Site Settings"
+        file: "data/site-settings.json"
+        editor: { preview: false }
+        fields:
+          - { label: "Site Logo", name: "logo", widget: "image", hint: "Replaces the logo in the header across every page." }
+          - { label: "Footer Text", name: "footer_text", widget: "text", hint: "Replaces the copyright/tagline text in the footer across every page." }
+
   # ---------- HOME ----------
   - name: "home"
     label: "Home"
