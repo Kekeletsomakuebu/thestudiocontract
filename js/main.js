@@ -48,6 +48,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Directory filter (only present on directory.html) — supports
+  // deep-links like directory.html?cat=Producer from the nav dropdown.
+  const dirFilterRow = document.getElementById('directory-filters');
+  const dirCards = document.querySelectorAll('.directory-card');
+  if (dirFilterRow && dirCards.length) {
+    const dirBtns = dirFilterRow.querySelectorAll('button');
+    const applyDirFilter = (cat) => {
+      dirBtns.forEach(b => b.classList.toggle('active', b.dataset.filter === cat));
+      dirCards.forEach(c => {
+        const show = cat === 'all' || c.dataset.category === cat;
+        c.style.display = show ? 'flex' : 'none';
+      });
+    };
+    dirBtns.forEach(btn => {
+      btn.addEventListener('click', () => applyDirFilter(btn.dataset.filter));
+    });
+    const params = new URLSearchParams(window.location.search);
+    const catParam = params.get('cat');
+    if (catParam && [...dirBtns].some(b => b.dataset.filter === catParam)) {
+      applyDirFilter(catParam);
+    }
+  }
+
   // Coming soon page: read ?s= from the URL and personalize the heading
   const soonTitle = document.getElementById('soon-title');
   if (soonTitle) {
