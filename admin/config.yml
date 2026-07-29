@@ -1,0 +1,133 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Netlify Identity + Git Gateway handles auth — no tokens to manage.
+publish_mode: editorial_workflow
+media_folder: "assets"
+public_folder: "assets"
+
+locale: "en"
+
+collections:
+
+  # ---------- HOME ----------
+  - name: "home"
+    label: "Home"
+    files:
+      - name: "home"
+        label: "Home Page"
+        file: "index.html"
+        editor: { preview: false }
+        fields:
+          - { label: "Hero Eyebrow", name: "hero_eyebrow", widget: "string", required: false }
+          - { label: "Hero Heading", name: "hero_heading", widget: "string", required: false }
+          - { label: "Hero Paragraph", name: "hero_lede", widget: "text", required: false }
+          - { label: "Hero Photo", name: "hero_photo", widget: "image", required: false }
+
+  # ---------- LIBRARY (Guides) ----------
+  - name: "guides"
+    label: "Library — Guides"
+    folder: "guides"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Read Time", name: "read_time", widget: "string", hint: "e.g. 8 min" }
+      - { label: "Body", name: "body", widget: "markdown" }
+      - { label: "Related Guides", name: "related", widget: "list", required: false }
+
+  # ---------- ARTICLES ----------
+  - name: "articles"
+    label: "Articles"
+    folder: "articles"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Summary", name: "summary", widget: "text" }
+      - { label: "Status", name: "status", widget: "select", options: ["Developing story", "Confirmed", "Follow-up"] }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Source", name: "source", widget: "string", hint: "e.g. Strictly Lesotho Music" }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  # ---------- RESOURCES ----------
+  - name: "resources"
+    label: "Resources"
+    folder: "resources"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Category", name: "category", widget: "select", options: ["Copyright", "Publishing", "Royalties", "Beat Licensing", "Distribution", "Music Marketing", "Metadata", "Finance", "Music Law"] }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  # ---------- DIRECTORY ----------
+  - name: "directory"
+    label: "Directory"
+    folder: "directory"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Business / Person Name", name: "name", widget: "string" }
+      - { label: "Category", name: "category", widget: "select", options: ["Studio", "Producer", "Entertainment Lawyer", "Collection Society", "Radio Station", "Label", "Event"] }
+      - { label: "Location (Town/City)", name: "location", widget: "string" }
+      - { label: "Photo / Logo", name: "photo", widget: "image", required: false }
+      - { label: "Phone", name: "phone", widget: "string", required: false }
+      - { label: "Email", name: "email", widget: "string", required: false }
+      - { label: "Website", name: "website", widget: "string", required: false }
+      - { label: "Short Description", name: "description", widget: "text" }
+
+  # ---------- PODCASTS ----------
+  - name: "podcast"
+    label: "Podcasts"
+    folder: "podcast"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Episode Title", name: "title", widget: "string" }
+      - { label: "Episode Number", name: "episode_number", widget: "number", required: false }
+      - { label: "Cover Image", name: "cover", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Spotify Link", name: "spotify_url", widget: "string", required: false }
+      - { label: "YouTube Link", name: "youtube_url", widget: "string", required: false }
+      - { label: "Apple Podcasts Link", name: "apple_url", widget: "string", required: false }
+      - { label: "Publish Date", name: "date", widget: "datetime" }
+
+  # ---------- TEMPLATES ----------
+  - name: "templates"
+    label: "Templates"
+    folder: "templates_downloads"
+    create: true
+    slug: "{{slug}}"
+    fields:
+      - { label: "Template Name", name: "title", widget: "string" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "PDF File", name: "file", widget: "file", media_library: { config: { multiple: false } } }
+      - { label: "Page Count", name: "pages", widget: "number", required: false }
+
+  # ---------- ABOUT ----------
+  - name: "about"
+    label: "About"
+    files:
+      - name: "about"
+        label: "About Page"
+        file: "about.html"
+        editor: { preview: false }
+        fields:
+          - { label: "Heading", name: "heading", widget: "string", required: false }
+          - { label: "Body", name: "body", widget: "markdown", required: false }
+
+  # ---------- CONTACT ----------
+  - name: "contact"
+    label: "Contact"
+    files:
+      - name: "contact"
+        label: "Contact Page"
+        file: "contact.html"
+        editor: { preview: false }
+        fields:
+          - { label: "Email", name: "email", widget: "string", required: false }
+          - { label: "Phone", name: "phone", widget: "string", required: false }
+          - { label: "Instagram", name: "instagram", widget: "string", required: false }
