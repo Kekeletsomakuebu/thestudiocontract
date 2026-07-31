@@ -1,22 +1,21 @@
 /**
  * Build step for The Studio Contract.
  *
- * This site has no framework and no client-side data fetching for
- * Global Settings (logo + footer text) anymore — instead, this script
- * runs automatically during every Netlify deploy and writes the current
- * values from data/site-settings.json directly into each HTML page
- * before it's served.
+ * This site has no framework. Instead, this script runs automatically
+ * during every Netlify deploy (see netlify.toml) and:
  *
- * Why: fetching settings in the browser after the page loads caused a
- * brief "flash" of the old logo/footer before the real one appeared.
- * Baking the values in at build time means the correct content is in
- * the HTML from the very first byte — nothing to fetch, nothing to swap,
- * no flash.
+ *   1. Bakes the Global Settings (logo + footer text) into every page
+ *      before it's served. Doing this at build time — instead of
+ *      fetching it in the browser after the page loads — means there's
+ *      no "flash" of the old logo/footer before the real one appears.
  *
- * Nothing about this requires Keke to write or run any code by hand.
- * Netlify runs `node build.js` automatically on every push — including
- * pushes made by Decap CMS through Git Gateway when Keke edits Global
- * Settings from /admin and hits "Publish."
+ *   2. Reads any Directory, Podcast, or Templates entries Decap CMS has
+ *      written (as flat-frontmatter .md files) and turns them into the
+ *      HTML cards on directory.html, podcast.html, and templates.html.
+ *
+ * Nothing here requires Keke to write or run code by hand. Netlify runs
+ * `node build.js` automatically on every push — including pushes made
+ * by Decap CMS through Git Gateway when Keke hits "Publish" in /admin.
  */
 
 const fs = require("fs");
@@ -48,11 +47,11 @@ function loadSettings() {
 }
 
 /**
- * Minimal frontmatter parser for Decap CMS entries.
- * Our collections (directory, podcast) only ever produce flat
- * "key: value" frontmatter — no nested objects or lists — so a
- * small hand-rolled parser avoids needing an npm dependency
- * (and therefore an `npm install` step) just for this.
+ * Minimal frontmatter parser for Decap CMS entries. Our collections
+ * (directory, podcast, templates) only ever produce flat "key: value"
+ * frontmatter — no nested objects or lists — so a small hand-rolled
+ * parser avoids needing an npm dependency (and therefore an
+ * `npm install` step) just for this.
  */
 function parseFrontmatter(raw) {
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
@@ -92,6 +91,28 @@ function injectBetweenMarkers(html, markerName, innerHtml) {
   return { html: html.replace(pattern, `$1\n${innerHtml}\n$2`), changed: true };
 }
 
+function applySettingsToFile(filePath, settings) {
+  let html = fs.readFileSync(filePath, "utf8");
+  let changed = false;
+
+  const logoPattern = new RegExp(
+    `(class="brand"[^>]*>\\s*<img[^>]*src=")${DEFAULT_LOGO_SRC.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`
+  );
+  if (settings.logo !== DEFAULT_LOGO_SRC && logoPattern.test(html)) {
+    html = html.replace(logoPattern, `$1${settings.logo}$2`);
+    changed = true;
+  }
+
+  const footerPattern = /(<span id="footer-text">)[\s\S]*?(<\/span>)/;
+  if (settings.footerText && footerPattern.test(html)) {
+    html = html.replace(footerPattern, `$1${escapeHtml(settings.footerText)}$2`);
+    changed = true;
+  }
+
+  if (changed) fs.writeFileSync(filePath, html, "utf8");
+  return changed;
+}
+
 function directoryCardHtml(entry) {
   const name = escapeHtml(entry.name || "Untitled listing");
   const category = escapeHtml(entry.category || "");
@@ -104,9 +125,7 @@ function directoryCardHtml(entry) {
   if (entry.phone) contacts.push(`<a href="tel:${escapeHtml(entry.phone).replace(/\s+/g, "")}">${escapeHtml(entry.phone)}</a>`);
   if (entry.email) contacts.push(`<a href="mailto:${escapeHtml(entry.email)}">${escapeHtml(entry.email)}</a>`);
   if (entry.website) contacts.push(`<a href="${escapeHtml(entry.website)}" target="_blank" rel="noopener">Website</a>`);
-  const contactsHtml = contacts.length
-    ? `<div class="directory-contact">${contacts.join("")}</div>`
-    : "";
+  const contactsHtml = contacts.length ? `<div class="directory-contact">${contacts.join("")}</div>` : "";
   return `<article class="directory-card" data-category="${category}">
       ${photo}
       <div class="directory-body">
@@ -141,10 +160,30 @@ function podcastCardHtml(entry) {
     </article>`;
 }
 
+function templateCardHtml(entry) {
+  const title = escapeHtml(entry.title || "Untitled template");
+  const description = escapeHtml(entry.description || "");
+  const meta = entry.pages ? `${escapeHtml(entry.pages)} page${String(entry.pages) === "1" ? "" : "s"}` : "PDF";
+  const downloadHtml = entry.file
+    ? `<a href="${escapeHtml(entry.file)}" download>Download &rarr;</a>`
+    : `<span style="color:var(--ink-faint);">File pending</span>`;
+  return `<article class="work" data-type="template">
+      <div class="work-top">
+        <h3>${title}</h3>
+        <span class="work-type">PDF</span>
+      </div>
+      ${description ? `<p>${description}</p>` : ""}
+      <div class="work-meta">
+        <span>${meta}</span>
+        ${downloadHtml}
+      </div>
+    </article>`;
+}
+
 function applyDirectory(filePath) {
   const entries = listEntries("directory");
   if (!entries.length) return false;
-  let html = fs.readFileSync(filePath, "utf8");
+  const html = fs.readFileSync(filePath, "utf8");
   entries.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
   const cardsHtml = entries.map(directoryCardHtml).join("\n");
   const result = injectBetweenMarkers(html, "DIRECTORY_ENTRIES", cardsHtml);
@@ -155,56 +194,32 @@ function applyDirectory(filePath) {
 function applyPodcast(filePath) {
   const entries = listEntries("podcast");
   if (!entries.length) return false;
-  let html = fs.readFileSync(filePath, "utf8");
-  entries.sort((a, b) => {
-    const da = Date.parse(a.date || "") || 0;
-    const db = Date.parse(b.date || "") || 0;
-    return db - da;
-  });
+  const html = fs.readFileSync(filePath, "utf8");
+  entries.sort((a, b) => (Date.parse(b.date || "") || 0) - (Date.parse(a.date || "") || 0));
   const cardsHtml = entries.map(podcastCardHtml).join("\n");
   const result = injectBetweenMarkers(html, "PODCAST_EPISODES", cardsHtml);
   if (result.changed) fs.writeFileSync(filePath, result.html, "utf8");
   return result.changed;
 }
 
-function applySettingsToFile(filePath, settings) {
-  let html = fs.readFileSync(filePath, "utf8");
-  let changed = false;
-
-  // Logo: every page's header always ships with the default logo src
-  // baked in as a stable anchor point for this replacement.
-  const logoPattern = new RegExp(
-    `(class="brand"[^>]*>\\s*<img[^>]*src=")${DEFAULT_LOGO_SRC.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(")`
-  );
-  if (settings.logo !== DEFAULT_LOGO_SRC && logoPattern.test(html)) {
-    html = html.replace(logoPattern, `$1${settings.logo}$2`);
-    changed = true;
-  }
-
-  // Footer text: replace the full contents of #footer-text, whatever
-  // they currently are, with the escaped current setting.
-  const footerPattern = /(<span id="footer-text">)[\s\S]*?(<\/span>)/;
-  if (settings.footerText && footerPattern.test(html)) {
-    html = html.replace(footerPattern, `$1${escapeHtml(settings.footerText)}$2`);
-    changed = true;
-  }
-
-  if (changed) {
-    fs.writeFileSync(filePath, html, "utf8");
-  }
-  return changed;
+function applyTemplates(filePath) {
+  const entries = listEntries("templates_downloads");
+  if (!entries.length) return false;
+  const html = fs.readFileSync(filePath, "utf8");
+  entries.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+  const cardsHtml = entries.map(templateCardHtml).join("\n");
+  const result = injectBetweenMarkers(html, "TEMPLATE_FILES", cardsHtml);
+  if (result.changed) fs.writeFileSync(filePath, result.html, "utf8");
+  return result.changed;
 }
 
 function main() {
   const settings = loadSettings();
-  const htmlFiles = fs
-    .readdirSync(ROOT)
-    .filter((f) => f.endsWith(".html")); // root-level pages only — admin/index.html is a different template and is left alone
+  const htmlFiles = fs.readdirSync(ROOT).filter((f) => f.endsWith(".html"));
 
   let updatedCount = 0;
   for (const file of htmlFiles) {
-    const full = path.join(ROOT, file);
-    if (applySettingsToFile(full, settings)) updatedCount++;
+    if (applySettingsToFile(path.join(ROOT, file), settings)) updatedCount++;
   }
   console.log(`[build] Global Settings applied. Logo: "${settings.logo}". Footer text updated: ${settings.footerText ? "yes" : "no (using page defaults)"}. Files changed: ${updatedCount}/${htmlFiles.length}.`);
 
@@ -212,14 +227,21 @@ function main() {
   if (fs.existsSync(directoryPath)) {
     const entries = listEntries("directory");
     const changed = applyDirectory(directoryPath);
-    console.log(`[build] Directory: ${entries.length} listing(s) found. ${changed ? "Injected into directory.html." : "No injection (none found or markers missing) — empty-state left in place."}`);
+    console.log(`[build] Directory: ${entries.length} listing(s) found. ${changed ? "Injected into directory.html." : "No injection — empty-state left in place."}`);
   }
 
   const podcastPath = path.join(ROOT, "podcast.html");
   if (fs.existsSync(podcastPath)) {
     const entries = listEntries("podcast");
     const changed = applyPodcast(podcastPath);
-    console.log(`[build] Podcast: ${entries.length} episode(s) found. ${changed ? "Injected into podcast.html." : "No injection (none found or markers missing) — empty-state left in place."}`);
+    console.log(`[build] Podcast: ${entries.length} episode(s) found. ${changed ? "Injected into podcast.html." : "No injection — empty-state left in place."}`);
+  }
+
+  const templatesPath = path.join(ROOT, "templates.html");
+  if (fs.existsSync(templatesPath)) {
+    const entries = listEntries("templates_downloads");
+    const changed = applyTemplates(templatesPath);
+    console.log(`[build] Templates: ${entries.length} file(s) found. ${changed ? "Injected into templates.html." : "No injection — empty-state left in place."}`);
   }
 }
 

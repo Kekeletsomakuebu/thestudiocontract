@@ -12,9 +12,8 @@ locale: "en"
 collections:
 
   # ---------- GLOBAL SETTINGS ----------
-  # Powers the site logo (header) and footer text across every page.
-  # The front-end (js/main.js) fetches data/site-settings.json on load
-  # and injects these values into .brand img and #footer-text.
+  # Powers the site logo and footer text across every page.
+  # build.js bakes these in at deploy time — no flash, no fetch.
   - name: "settings"
     label: "Global Settings"
     files:
@@ -25,20 +24,6 @@ collections:
         fields:
           - { label: "Site Logo", name: "logo", widget: "image", hint: "Replaces the logo in the header across every page." }
           - { label: "Footer Text", name: "footer_text", widget: "text", hint: "Replaces the copyright/tagline text in the footer across every page." }
-
-  # ---------- HOME ----------
-  - name: "home"
-    label: "Home"
-    files:
-      - name: "home"
-        label: "Home Page"
-        file: "index.html"
-        editor: { preview: false }
-        fields:
-          - { label: "Hero Eyebrow", name: "hero_eyebrow", widget: "string", required: false }
-          - { label: "Hero Heading", name: "hero_heading", widget: "string", required: false }
-          - { label: "Hero Paragraph", name: "hero_lede", widget: "text", required: false }
-          - { label: "Hero Photo", name: "hero_photo", widget: "image", required: false }
 
   # ---------- LIBRARY (Guides) ----------
   - name: "guides"
@@ -51,7 +36,6 @@ collections:
       - { label: "Description", name: "description", widget: "text" }
       - { label: "Read Time", name: "read_time", widget: "string", hint: "e.g. 8 min" }
       - { label: "Body", name: "body", widget: "markdown" }
-      - { label: "Related Guides", name: "related", widget: "list", required: false }
 
   # ---------- ARTICLES ----------
   - name: "articles"

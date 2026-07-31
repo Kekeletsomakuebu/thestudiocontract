@@ -75,7 +75,7 @@ header.site {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 30px 0;
+  padding: 20px 0;
 }
 .brand {
   display: flex;
@@ -84,7 +84,7 @@ header.site {
   text-decoration: none;
   color: var(--ink);
 }
-.brand img { height: auto; max-height: 42px; width: auto; max-width: 220px; flex-shrink: 0; }
+.brand img { height: auto; max-height: 68px; width: auto; max-width: 300px; flex-shrink: 0; }
 .nav-links {
   display: flex;
   align-items: center;
@@ -131,7 +131,7 @@ header.site {
 @media (max-width: 720px) {
   /* Compact premium header bar: logo left, toggle right */
   .nav { padding: 16px 0; }
-  .brand img { max-height: 32px; }
+  .brand img { max-height: 46px; }
   .nav-toggle { display: flex; align-items: center; justify-content: center; z-index: 61; position: relative; }
 
   /* Dimmed backdrop behind the drawer. This lives on header.site (not
@@ -188,9 +188,46 @@ header.site {
     background: var(--bg);
   }
 
-  /* Submenus stay off on mobile — Library/Resources/Directory
-     link straight to their hub page, which lists everything. */
-  .nav-links .dropdown { display: none !important; }
+  /* Library / Resources / Directory become tap-to-expand accordions
+     on mobile, since there's no hover here. The row splits into the
+     link (navigates) and a caret (expands) so both stay usable. */
+  .nav-links li.has-submenu {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    border-top: 1px solid var(--line);
+  }
+  .nav-links li:first-child.has-submenu { border-top: none; }
+  .nav-links li.has-submenu a { flex: 1; border-top: none; }
+  .dropdown-caret {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 100%;
+    align-self: stretch;
+    font-size: 1.1rem;
+    transition: transform 0.25s ease;
+  }
+  .dropdown-caret[aria-expanded="true"] { transform: rotate(180deg); }
+
+  .nav-links .dropdown {
+    display: none;
+    position: static;
+    width: 100%;
+    min-width: 0;
+    background: var(--bg-alt);
+    border: none;
+    padding: 0;
+    z-index: auto;
+  }
+  .nav-links li.dropdown-open .dropdown { display: flex; }
+  .nav-links .dropdown a {
+    padding: 16px 32px 16px 48px;
+    border-top: 1px solid var(--line);
+    font-size: 0.98rem;
+    color: var(--ink-dim);
+  }
 }
 
 /* ---------- eyebrow / labels ---------- */
@@ -498,6 +535,30 @@ section.block { padding: 72px 0; }
 }
 .empty-state p { max-width: 46ch; margin: 0 auto; line-height: 1.6; }
 
+.founder-card {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 36px;
+  align-items: start;
+  background: var(--bg-alt);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 32px;
+}
+@media (max-width: 640px) { .founder-card { grid-template-columns: 1fr; } }
+.founder-photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-raised);
+}
+.founder-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.founder-info h2 { font-family: var(--display); font-size: 1.6rem; margin: 0 0 4px; }
+.founder-title { color: var(--amber-dim); font-family: var(--mono); font-size: 0.85rem; margin-bottom: 14px; }
+.founder-bio { color: var(--ink-dim); line-height: 1.65; }
+.founder-bio p { margin: 0 0 12px; }
+
 /* ---------- about ---------- */
 .about-grid {
   display: grid;
@@ -677,6 +738,14 @@ footer.site {
 
 /* ---------- nav dropdown (mega-menu style) ---------- */
 .nav-links li { position: relative; }
+.dropdown-caret {
+  display: none; /* desktop uses hover; mobile turns this into a real toggle */
+  background: none;
+  border: none;
+  color: var(--ink-dim);
+  cursor: pointer;
+  padding: 0;
+}
 .nav-links .dropdown {
   position: absolute;
   top: 100%;

@@ -29,6 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') setMenu(false);
     });
+
+    // Mobile accordion: Library / Resources / Directory expand in place
+    // instead of relying on hover (which doesn't exist on touch).
+    document.querySelectorAll('.dropdown-caret').forEach(caret => {
+      const li = caret.closest('li');
+      if (!li) return;
+      li.classList.add('has-submenu');
+      caret.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isOpen = li.classList.toggle('dropdown-open');
+        caret.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    });
   }
 
   // Library filter (only present on library.html)
