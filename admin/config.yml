@@ -3,7 +3,8 @@ backend:
   branch: main
 
 # Netlify Identity + Git Gateway handles auth — no tokens to manage.
-publish_mode: editorial_workflow
+# No editorial workflow: hitting "Save" in the dashboard commits
+# straight to the live site. One step, not two.
 media_folder: "assets"
 public_folder: "assets"
 
