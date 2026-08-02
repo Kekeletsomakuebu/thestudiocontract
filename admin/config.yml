@@ -10,23 +10,27 @@ public_folder: "assets"
 
 locale: "en"
 
+# The collections below are ordered and named to match the site's own
+# menu, top to bottom: Home, Library (Guides + Articles), Resources,
+# Directory, Podcast, Templates, About, Contact.
+
 collections:
 
-  # ---------- GLOBAL SETTINGS ----------
-  # Powers the site logo and footer text across every page.
-  # build.js bakes these in at deploy time — no flash, no fetch.
-  - name: "settings"
-    label: "Global Settings"
+  # ---------- HOME ----------
+  - name: "home"
+    label: "Home"
     files:
-      - name: "site_settings"
-        label: "Site Settings"
-        file: "data/site-settings.json"
+      - name: "home"
+        label: "Home Page"
+        file: "data/home.json"
         editor: { preview: false }
         fields:
-          - { label: "Site Logo", name: "logo", widget: "image", hint: "Replaces the logo in the header across every page." }
-          - { label: "Footer Text", name: "footer_text", widget: "text", hint: "Replaces the copyright/tagline text in the footer across every page." }
+          - { label: "Eyebrow (small text above the headline)", name: "kicker", widget: "string" }
+          - { label: "Headline", name: "title", widget: "string" }
+          - { label: "Paragraph under the headline", name: "lede", widget: "text" }
+          - { label: "Hero Photo", name: "hero_photo", widget: "image" }
 
-  # ---------- LIBRARY (Guides) ----------
+  # ---------- LIBRARY: GUIDES ----------
   - name: "guides"
     label: "Library — Guides"
     folder: "guides"
@@ -38,9 +42,9 @@ collections:
       - { label: "Read Time", name: "read_time", widget: "string", hint: "e.g. 8 min" }
       - { label: "Body", name: "body", widget: "markdown" }
 
-  # ---------- ARTICLES ----------
+  # ---------- LIBRARY: ARTICLES ----------
   - name: "articles"
-    label: "Articles"
+    label: "Library — Articles"
     folder: "articles"
     create: true
     slug: "{{slug}}"
@@ -49,7 +53,7 @@ collections:
       - { label: "Summary", name: "summary", widget: "text" }
       - { label: "Status", name: "status", widget: "select", options: ["Developing story", "Confirmed", "Follow-up"] }
       - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Source", name: "source", widget: "string", hint: "e.g. Strictly Lesotho Music" }
+      - { label: "Source", name: "source", widget: "string", required: false, hint: "e.g. Strictly Lesotho Music" }
       - { label: "Body", name: "body", widget: "markdown" }
 
   # ---------- RESOURCES ----------
@@ -79,9 +83,9 @@ collections:
       - { label: "Website", name: "website", widget: "string", required: false }
       - { label: "Short Description", name: "description", widget: "text" }
 
-  # ---------- PODCASTS ----------
+  # ---------- PODCAST ----------
   - name: "podcast"
-    label: "Podcasts"
+    label: "Podcast"
     folder: "podcast"
     create: true
     slug: "{{slug}}"
@@ -113,11 +117,11 @@ collections:
     files:
       - name: "about"
         label: "About Page"
-        file: "about.html"
+        file: "data/about.json"
         editor: { preview: false }
         fields:
-          - { label: "Heading", name: "heading", widget: "string", required: false }
-          - { label: "Body", name: "body", widget: "markdown", required: false }
+          - { label: "Headline", name: "heading", widget: "string" }
+          - { label: "Body (leave a blank line between paragraphs)", name: "body", widget: "text" }
 
   # ---------- CONTACT ----------
   - name: "contact"
@@ -125,9 +129,25 @@ collections:
     files:
       - name: "contact"
         label: "Contact Page"
-        file: "contact.html"
+        file: "data/contact.json"
         editor: { preview: false }
         fields:
-          - { label: "Email", name: "email", widget: "string", required: false }
+          - { label: "Headline", name: "heading", widget: "string" }
+          - { label: "Description", name: "description", widget: "text" }
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "Instagram handle (without the @)", name: "instagram_handle", widget: "string", required: false }
           - { label: "Phone", name: "phone", widget: "string", required: false }
-          - { label: "Instagram", name: "instagram", widget: "string", required: false }
+          - { label: "Location", name: "location", widget: "string" }
+
+  # ---------- GLOBAL SETTINGS ----------
+  # Powers the site logo and footer text across every page.
+  - name: "settings"
+    label: "Global Settings"
+    files:
+      - name: "site_settings"
+        label: "Site Settings"
+        file: "data/site-settings.json"
+        editor: { preview: false }
+        fields:
+          - { label: "Site Logo", name: "logo", widget: "image", hint: "Replaces the logo in the header across every page." }
+          - { label: "Footer Text", name: "footer_text", widget: "text", hint: "Replaces the copyright/tagline text in the footer across every page." }

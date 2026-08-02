@@ -84,7 +84,7 @@ header.site {
   text-decoration: none;
   color: var(--ink);
 }
-.brand img { height: auto; max-height: 68px; width: auto; max-width: 300px; flex-shrink: 0; }
+.brand img { height: auto; max-height: 40px; width: auto; max-width: 200px; flex-shrink: 0; }
 .nav-links {
   display: flex;
   align-items: center;
